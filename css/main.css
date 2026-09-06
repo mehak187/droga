@@ -97,6 +97,19 @@ html {
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
 }
 
+/* Hero image */
+.hero-img {
+    aspect-ratio: 16 / 10;
+    object-fit: cover;
+    object-position: center;
+}
+
+@media (max-width: 767px) {
+    .hero-img {
+        aspect-ratio: 4 / 3;
+    }
+}
+
 /* Video Card Styles */
 .video-card video {
     display: block;

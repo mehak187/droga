@@ -1,0 +1,8 @@
+# Raw source copy of the videos (duplicate of assets/videos) - not used by the site
+Droga Industry/
+
+# Editor / OS
+.vscode/
+Thumbs.db
+desktop.ini
+.DS_Store

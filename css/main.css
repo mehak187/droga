@@ -901,3 +901,145 @@ a:hover { color: var(--gold); }
 }
 
 .media-card .step-no { margin-bottom: .55rem; }
+
+/* ---------- Reel treatment ------------------------------------------------
+   Archive-film grade: warm desaturated wash + grain + scanlines + vignette.
+   Reads as a deliberate treatment and masks the compression artefacts in
+   phone-shot factory footage. Eases back while a clip is playing.
+   Grain uses overlay blend so the letterbox bars stay clean navy.
+   ------------------------------------------------------------------------- */
+
+.reel {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    background: var(--navy-900);
+    box-shadow: inset 0 0 70px 24px rgba(6, 20, 36, .55);
+}
+
+.reel video {
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    object-fit: contain;
+    background: var(--navy-900);
+    filter: saturate(.62) contrast(1.16) brightness(.95) sepia(.16);
+    transition: filter .5s var(--ease);
+}
+
+/* graded colour wash */
+.reel::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    background: linear-gradient(158deg,
+            rgba(22, 56, 92, .85) 0%,
+            rgba(192, 138, 46, .38) 54%,
+            rgba(8, 24, 42, .9) 100%);
+    mix-blend-mode: soft-light;
+    transition: opacity .5s var(--ease);
+}
+
+/* grain + scanlines — overlay blend keeps the dark bars dark */
+.reel::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    pointer-events: none;
+    mix-blend-mode: overlay;
+    background-image:
+        url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='0.92' numOctaves='3' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='180' height='180' filter='url(%23g)' opacity='0.7'/></svg>"),
+        repeating-linear-gradient(to bottom,
+            rgba(255, 255, 255, .05) 0 1px,
+            rgba(0, 0, 0, .06) 1px 3px);
+    background-size: 180px 180px, auto;
+    opacity: .9;
+    transition: opacity .5s var(--ease);
+}
+
+/* while a clip is actually running, pull the grade back */
+.reel.is-playing video { filter: saturate(.92) contrast(1.06) brightness(1); }
+.reel.is-playing::before { opacity: .28; }
+.reel.is-playing::after { opacity: .45; }
+
+/* corner tag so the look reads as a treatment, not a mistake */
+.reel-tag {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 4;
+    display: inline-flex;
+    align-items: center;
+    gap: .38rem;
+    padding: .2rem .58rem;
+    border: 1px solid rgba(217, 169, 74, .45);
+    border-radius: 999px;
+    background: rgba(8, 24, 42, .6);
+    backdrop-filter: blur(4px);
+    color: var(--gold-400);
+    font-size: .6rem;
+    font-weight: 700;
+    letter-spacing: .17em;
+    text-transform: uppercase;
+    pointer-events: none;
+}
+
+.reel-tag::before {
+    content: "";
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--gold-400);
+}
+
+.reel.is-playing .reel-tag::before { animation: reelPulse 1.6s infinite; }
+
+@keyframes reelPulse { 0%, 100% { opacity: 1; } 50% { opacity: .25; } }
+
+@media (prefers-reduced-motion: reduce) {
+    .reel.is-playing .reel-tag::before { animation: none; }
+}
+
+/* ---------- Form feedback + button hardening ------------------------------ */
+
+/* Bootstrap's .btn state rules (.btn:first-child:active etc.) out-specify a
+   plain .btn, which can strip the fill on <button> elements. Pin it. */
+.btn,
+.btn:hover,
+.btn:focus,
+.btn:focus-visible,
+.btn:active,
+.btn.active,
+.btn.show,
+.btn:first-child:active,
+:not(.btn-check) + .btn:active {
+    background-color: var(--btn-bg);
+    border-color: var(--btn-bd);
+    color: var(--btn-fg);
+}
+
+.form-note {
+    margin: .25rem 0 0;
+    padding: .7rem .95rem;
+    border-radius: 10px;
+    font-size: .87rem;
+    line-height: 1.55;
+}
+
+.form-note.is-ok {
+    background: #eef7f0;
+    border: 1px solid #cfe6d6;
+    color: #1f5c36;
+}
+
+.form-note.is-error {
+    background: #fdf0ef;
+    border: 1px solid #f3d2ce;
+    color: #93342a;
+}
+
+.btn .fa-whatsapp { font-size: 1.1em; color: #25d366; }
+.btn-outline:hover .fa-whatsapp { color: #fff; }

@@ -49,6 +49,91 @@
         });
     }, true);
 
+    /* Enquiry form -------------------------------------------------------- */
+    var form = document.querySelector('[data-enquiry-form]');
+
+    if (form) {
+        var status = form.querySelector('[data-enquiry-status]');
+        var waLink = form.querySelector('[data-wa]');
+        var TO = 'drogaindustries@gmail.com';
+        var WA = '923348334334';
+        var NL = String.fromCharCode(10);
+
+        var field = function (id) {
+            var el = document.getElementById(id);
+            return el ? el.value.trim() : '';
+        };
+
+        var say = function (msg, kind) {
+            if (!status) { return; }
+            status.textContent = msg;
+            status.className = 'form-note is-' + kind;
+            status.hidden = false;
+        };
+
+        var enquiryText = function () {
+            return [
+                'Name: ' + field('cf-name'),
+                'Company: ' + (field('cf-company') || '-'),
+                'Email: ' + field('cf-email'),
+                'Product: ' + field('cf-cat'),
+                '',
+                'Order details:',
+                field('cf-msg')
+            ].join(NL);
+        };
+
+        /* keep the WhatsApp button carrying whatever has been typed so far */
+        var syncWhatsApp = function () {
+            if (!waLink) { return; }
+            var filled = field('cf-name') || field('cf-msg');
+            var body = filled
+                ? 'Enquiry for Droga Industries' + NL + NL + enquiryText()
+                : 'Hello Droga Industries, I would like to discuss a custom apparel order.';
+            waLink.href = 'https://wa.me/' + WA + '?text=' + encodeURIComponent(body);
+        };
+
+        form.addEventListener('input', syncWhatsApp);
+        syncWhatsApp();
+
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            if (!field('cf-name') || !field('cf-email') || !field('cf-msg')) {
+                say('Please fill in your name, email and order details.', 'error');
+                return;
+            }
+
+            if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(field('cf-email'))) {
+                say('That email address does not look right.', 'error');
+                return;
+            }
+
+            var subject = 'Apparel enquiry - ' + field('cf-cat') + ' - ' + field('cf-name');
+
+            window.location.assign('mailto:' + TO +
+                '?subject=' + encodeURIComponent(subject) +
+                '&body=' + encodeURIComponent(enquiryText()));
+
+            say('Opening your email app with the enquiry ready to send. If nothing opens, email ' +
+                TO + ' or use the WhatsApp button below.', 'ok');
+        });
+    }
+
+    /* Ease the film grade back while a clip is running -------------------- */
+    document.addEventListener('play', function (e) {
+        if (e.target.tagName !== 'VIDEO') return;
+        var reel = e.target.closest('.reel');
+        if (reel) { reel.classList.add('is-playing'); }
+    }, true);
+
+    document.addEventListener('pause', function (e) {
+        if (e.target.tagName !== 'VIDEO') return;
+        var reel = e.target.closest('.reel');
+        /* 'ended' rolls straight into the next clip, so only a real pause resets it */
+        if (reel) { reel.classList.remove('is-playing'); }
+    }, true);
+
     /* Auto-advancing category reels -------------------------------------- */
     document.querySelectorAll('.playlist').forEach(function (box) {
         var video = box.querySelector('video');
@@ -66,7 +151,7 @@
 
         var i = 0;
 
-        function load(next, autoplay) {
+        var load = function (next, autoplay) {
             i = (next % srcs.length + srcs.length) % srcs.length;
             video.poster = posters[i] || '';
             video.src = srcs[i];
@@ -77,7 +162,7 @@
                 var pr = video.play();
                 if (pr && pr.catch) { pr.catch(function () { /* autoplay refused */ }); }
             }
-        }
+        };
 
         /* when a clip finishes, roll straight into the next one, then loop */
         video.addEventListener('ended', function () { load(i + 1, true); });
@@ -87,12 +172,6 @@
             if (box.dataset.recovering === '1') { return; }
             box.dataset.recovering = '1';
             setTimeout(function () { box.dataset.recovering = '0'; load(i + 1, true); }, 300);
-        });
-
-        box.querySelectorAll('[data-step]').forEach(function (btn) {
-            btn.addEventListener('click', function () {
-                load(i + parseInt(btn.dataset.step, 10), !video.paused);
-            });
         });
     });
 
